@@ -1,0 +1,339 @@
+{
+	"info": {
+		"_postman_id": "8f16bf00-77e4-4837-98db-2681c26ec109",
+		"name": "Appointment Booking System API",
+		"description": "Postman Collection for Appointment Booking System API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Doctors",
+			"item": [
+				{
+					"name": "Create Doctor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.id) {",
+									"    pm.collectionVariables.set(\"doctor_id\", jsonData.id);",
+									"    console.log(\"Saved doctor_id: \" + jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Dr. Gregory House\",\n    \"email\": \"house.diagnostics@example.com\",\n    \"specialization\": \"Diagnostic Medicine\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/doctors",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"doctors"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Define Doctor Availability",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.slots && jsonData.slots.length > 0) {",
+									"    pm.collectionVariables.set(\"slot_id\", jsonData.slots[0].id);",
+									"    console.log(\"Saved slot_id: \" + jsonData.slots[0].id);",
+									"    if (jsonData.slots.length > 1) {",
+									"        pm.collectionVariables.set(\"reschedule_slot_id\", jsonData.slots[1].id);",
+									"        console.log(\"Saved reschedule_slot_id: \" + jsonData.slots[1].id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"date\": \"{{tomorrow_date}}\",\n    \"start_time\": \"09:00\",\n    \"end_time\": \"11:00\",\n    \"slot_duration\": 30\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/doctors/{{doctor_id}}/availabilities",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"doctors",
+								"{{doctor_id}}",
+								"availabilities"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Bookings & Slots",
+			"item": [
+				{
+					"name": "View Available Slots",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/slots/available?doctor_id={{doctor_id}}&date={{tomorrow_date}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"slots",
+								"available"
+							],
+							"query": [
+								{
+									"key": "doctor_id",
+									"value": "{{doctor_id}}"
+								},
+								{
+									"key": "date",
+									"value": "{{tomorrow_date}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Book Appointment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.booking && jsonData.booking.booking_reference) {",
+									"    pm.collectionVariables.set(\"booking_reference\", jsonData.booking.booking_reference);",
+									"    console.log(\"Saved booking_reference: \" + jsonData.booking.booking_reference);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"slot_id\": {{slot_id}},\n    \"patient_name\": \"John Watson\",\n    \"patient_email\": \"watson@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/bookings",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"bookings"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reschedule Appointment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"new_slot_id\": {{reschedule_slot_id}}\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/bookings/{{booking_reference}}/reschedule",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"bookings",
+								"{{booking_reference}}",
+								"reschedule"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cancel Appointment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"cancellation_reason\": \"Patient has a personal emergency\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/bookings/{{booking_reference}}/cancel",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"bookings",
+								"{{booking_reference}}",
+								"cancel"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Calculate tomorrow's date for tests",
+					"const today = new Date();",
+					"const tomorrow = new Date(today);",
+					"tomorrow.setDate(tomorrow.getDate() + 1);",
+					"const yyyy = tomorrow.getFullYear();",
+					"let mm = tomorrow.getMonth() + 1; // Months start at 0!",
+					"let dd = tomorrow.getDate();",
+					"",
+					"if (dd < 10) dd = '0' + dd;",
+					"if (mm < 10) mm = '0' + mm;",
+					"",
+					"const formattedTomorrow = yyyy + '-' + mm + '-' + dd;",
+					"pm.collectionVariables.set(\"tomorrow_date\", formattedTomorrow);"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "doctor_id",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "tomorrow_date",
+			"value": "2026-06-06",
+			"type": "string"
+		},
+		{
+			"key": "slot_id",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "reschedule_slot_id",
+			"value": "2",
+			"type": "string"
+		},
+		{
+			"key": "booking_reference",
+			"value": "BK-TEST-1234",
+			"type": "string"
+		}
+	]
+}
